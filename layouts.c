@@ -372,7 +372,10 @@ tile(Monitor *m)
             if (n == 2) {
                 animateclient(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), 0, 0);
             } else {
-			animateclient(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), framecount, 0);
+                        //TODO: figure out how to differentiate between
+                        //      switching tags / spawning a new window to fix
+                        //      the slide animation
+			animateclient(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), 0, 0);
 			if (m->nmaster == 1 && n > 1) {
 				mw = c->w + c->bw * 2;
 			}
