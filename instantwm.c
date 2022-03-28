@@ -451,24 +451,12 @@ void animateclient(Client *c, int x, int y, int w, int h, int frames,
     XRRScreenConfiguration *conf = XRRGetScreenInfo(dpy, RootWindow(dpy, 0));
     short refresh_rate = XRRConfigCurrentRate(conf);
     
-<<<<<<< HEAD
-    //? scale the framerate properly for !=60Hz displays
-    frames = frames * (refresh_rate / 60);
-    double usecs = (1 / (double)refresh_rate) * 1000000;
-
-    // halve framerate if enough events are queried
-    if (XEventsQueued(dpy, QueuedAlready) > 50) {
-        frames = frames / 2; 
-        usecs  = usecs  * 2;
-    }
-=======
     // scale the framerate properly for !=60Hz displays
     frames = frames * (refresh_rate / 60);
     double usecs = (1 / (double)refresh_rate) * 1000000;
 
     // halve frames if enough events are queried
     frames = frames / 1 + (XEventsQueued(dpy, QueuedAlready) > 50);
->>>>>>> arbitrary-refresh-rate
 
     // No animation if even more events are queried
     if (!frames || XEventsQueued(dpy, QueuedAlready) > 100) {
