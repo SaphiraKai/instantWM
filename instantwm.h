@@ -144,6 +144,7 @@ struct Monitor {
 	int bt;               /* number of tasks */
 	int mx, my, mw, mh;   /* screen size */
 	int wx, wy, ww, wh;   /* window area  */
+	int gappx;
 	unsigned int seltags;
 	unsigned int sellt;
 	unsigned int tagset[2];

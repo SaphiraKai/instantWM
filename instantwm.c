@@ -1301,7 +1301,8 @@ Monitor *createmon(void) {
     m->nmaster = nmaster;
     m->showbar = showbar;
     m->topbar = topbar;
-    m->clientcount = 0;
+	m->gappx = gappx;
+	m->clientcount = 0;
     m->overlaymode = 0;
     m->scratchvisible = 0;
     m->lt[0] = &layouts[3];
