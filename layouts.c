@@ -4,6 +4,8 @@
 #include "push.h"
 #include "util.h"
 
+//TODO: fix the ugly misalignment when gaps are enabled and there are an even
+//      number of windows in both the master and stack
 void
 bstack(Monitor *m) {
 	int w, h, mh, mx, tx, ty, tw, framecount;
@@ -19,24 +21,24 @@ bstack(Monitor *m) {
 	if (n == 0)
 		return;
 	if (n > m->nmaster) {
-		mh = m->nmaster ? m->mfact * m->wh : 0;
-		tw = m->ww / (n - m->nmaster);
+		mh = m->nmaster ? m->mfact * m->wh: 0;
+		tw = (m->ww - m->gappx) / (n - m->nmaster);
 		ty = m->wy + mh;
 	} else {
-		mh = m->wh;
-		tw = m->ww;
+		mh = m->wh - m->gappx;
+		tw = m->ww - m->gappx;
 		ty = m->wy;
 	}
 	for (i = mx = 0, tx = m->wx, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
 		if (i < m->nmaster) {
-			w = (m->ww - mx) / (MIN(n, m->nmaster) - i);
-			animateclient(c, m->wx + mx, m->wy, w - (2 * c->bw), mh - (2 * c->bw), framecount, 0);
-			mx += WIDTH(c);
+			w = (m->ww - mx) / (MIN(n, m->nmaster) - i) - m->gappx;
+			animateclient(c, m->wx + mx + m->gappx, m->wy + m->gappx, w - (2*c->bw) - m->gappx, mh - (2*c->bw), framecount, 0);
+			mx += WIDTH(c) + m->gappx;
 		} else {
-			h = m->wh - mh;
-			animateclient(c, tx, ty, tw - (2 * c->bw), h - (2 * c->bw), framecount, 0);
+			h = m->wh - mh - m->gappx;
+			animateclient(c, tx + m->gappx, ty + (2*m->gappx), tw - (2*c->bw) - m->gappx, h - (2*c->bw) - (2*m->gappx), framecount, 0);
 			if (tw != m->ww)
-				tx += WIDTH(c);
+				tx += WIDTH(c) + m->gappx;
 		}
 	}
 }
@@ -93,22 +95,22 @@ bstackhoriz(Monitor *m) {
 	if (n == 0)
 		return;
 	if (n > m->nmaster) {
-		mh = m->nmaster ? m->mfact * m->wh : 0;
+		mh = m->nmaster ? m->mfact * m->wh - m->gappx: 0;
 		th = (m->wh - mh) / (n - m->nmaster);
 		ty = m->wy + mh;
 	} else {
-		th = mh = m->wh;
-		ty = m->wy;
+		th = mh = m->wh - m->gappx;
+		ty = m->wy - m->gappx;
 	}
 	for (i = mx = 0, tx = m->wx, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
 		if (i < m->nmaster) {
 			w = (m->ww - mx) / (MIN(n, m->nmaster) - i);
-			animateclient(c, m->wx + mx, m->wy, w - (2 * c->bw), mh - (2 * c->bw), framecount, 0);
-			mx += WIDTH(c);
+			animateclient(c, m->wx + mx + m->gappx, m->wy + m->gappx, w - (2 * c->bw) - (2*m->gappx), mh - (2 * c->bw) - (2*m->gappx), framecount, 0);
+			mx += WIDTH(c) + m->gappx;
 		} else {
-		animateclient(c, tx, ty, m->ww - (2 * c->bw), th - (2 * c->bw), framecount, 0);
+		animateclient(c, tx + m->gappx, ty, m->ww - (2 * c->bw) - (2*m->gappx), th - (2 * c->bw) - m->gappx, framecount, 0);
 			if (th != m->wh)
-				ty += HEIGHT(c);
+				ty += HEIGHT(c) + m->gappx;
 		}
 	}
 }
@@ -131,15 +133,15 @@ deck(Monitor *m)
 	if(n > m->nmaster)
 		mw = m->nmaster ? m->ww * m->mfact : 0;
 	else
-		mw = m->ww;
-	for(i = my = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
+		mw = m->ww - m->gappx;
+	for(i = 0, my = m->gappx, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
 		if(i < m->nmaster) {
-			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
-			resize(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), False);
-			my += HEIGHT(c);
+			h = (m->wh - my) / (MIN(n, m->nmaster) - i) - m->gappx;
+			resize(c, m->wx + m->gappx, m->wy + my, mw - (2*c->bw) - m->gappx, h - (2*c->bw), False);
+			my += HEIGHT(c) + m->gappx;
 		}
 		else
-			resize(c, m->wx + mw, m->wy, m->ww - mw - (2*c->bw), m->wh - (2*c->bw), False);
+			resize(c, m->wx + mw + m->gappx, m->wy, m->ww - mw - (2*c->bw) - 2*m->gappx, m->wh - (2*c->bw), False);
 }
 
 void
@@ -147,7 +149,7 @@ grid(Monitor *m) {
 	int i, n, rows, framecount;
 	unsigned int cols;
 	Client *c;
-    
+
 	if (m->clientcount <= 2 && m->mw > m->mh)
 	{
 		tile(m);
@@ -176,7 +178,7 @@ grid(Monitor *m) {
 		/* adjust height/width of last row/column's windows */
 		int ah = ((i + 1) % rows == 0) ? m->wh - ch * rows : 0;
 		unsigned int aw = (i >= rows * (cols - 1)) ? m->ww - cw * cols : 0;
-		animateclient(c, cx, cy, cw - 2 * c->bw + aw, ch - 2 * c->bw + ah, framecount, 0);
+		animateclient(c, cx + m->gappx, cy + m->gappx, cw - 2*c->bw + aw - m->gappx, ch - 2*c->bw + ah - m->gappx, framecount, 0);
 		i++;
 	}
 }
@@ -285,10 +287,10 @@ tcl(Monitor * m)
 	sw = (m->ww - mw) / 2;
 	bdw = (2 * c->bw);
 	resize(c,
-			n < 3 ? m->wx : m->wx + sw,
-			m->wy,
-			n == 1 ? m->ww - bdw : mw - bdw,
-			m->wh - bdw,
+			n < 3 ? m->wx : m->wx + sw + m->gappx,
+			m->wy + m->gappx,
+			n == 1 ? m->ww - bdw : mw - bdw - 2*m->gappx,
+			m->wh - bdw - 2*m->gappx,
 			False);
 
 	if (--n == 0)
