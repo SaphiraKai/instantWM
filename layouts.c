@@ -4,6 +4,8 @@
 #include "push.h"
 #include "util.h"
 
+//TODO: fix the ugly misalignment when gaps are enabled and there are an even
+//      number of windows in both the master and stack
 void
 bstack(Monitor *m) {
 	int w, h, mh, mx, tx, ty, tw, framecount;
