@@ -6564,10 +6564,10 @@ int main(int argc, char *argv[]) {
             list_xresources();
             return EXIT_SUCCESS;
         } else {
-            die("usage: instantwm [-v]");
+            die("usage: instantwm [-VX]");
         }
     } else if (argc != 1)
-        die("usage: instantwm [-v]");
+        die("usage: instantwm [-VX]");
     if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
         fputs("warning: no locale support\n", stderr);
     if (!(dpy = XOpenDisplay(NULL)))
